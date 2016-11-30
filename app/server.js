@@ -9,6 +9,8 @@ var utils = require('./utils');
 
 function Server(host, port){
 	var app = express();
+	var bodyParser = require('body-parser');
+	app.use(bodyParser.urlencoded({extended: false}));
 	
 	app.set('views', './views');
 	app.set('view engine', 'hbs');
@@ -17,10 +19,23 @@ function Server(host, port){
 		var mockId = request.params.mock_id;
 		var cached = myCache.get(mockId);
 		if (cached){
-			response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached.body)});
+			response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached.body, null, 2)});
 		} else {
 			response.render('mock', { id: mockId, mock: cached });
 		}
+	});
+	
+	app.post('/mock/:mock_id', function(request, response){
+		var mockId = request.params.mock_id;
+		var cached = myCache.get(mockId);
+		cached.body = JSON.parse(request.body.json);
+		myCache.set(mockId, cached, function( err, success ){
+			if( !err && success ){
+				console.log( "SAVE CACHE -> " + success );
+				console.log( "OBJECT -> " + cached );
+				response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached.body, null, 2)});
+			}
+		});
 	});
 	
 	app.use('/static', express.static('public'));
@@ -56,7 +71,6 @@ function Server(host, port){
 						body += chunk;
 					}).on('end', () => {
 						body = JSON.parse(body);
-						body.mockID = keyCache;
 						
 						console.log("EITAAA: " + body.statusCode);
 
@@ -67,7 +81,8 @@ function Server(host, port){
 								console.log( "BODY -> " + body );
 							}
 						});
-
+						
+						body.mockID = keyCache;
 						response.set(res.headers)
 						.status(res.statusCode)
 						.json(body);
@@ -80,6 +95,8 @@ function Server(host, port){
 				dimas.write(body);
 				
 			} else {
+				cached.body.mockID = keyCache;
+				
 				response
 				.set(cached.headers)
 				.status(cached.statusCode)
