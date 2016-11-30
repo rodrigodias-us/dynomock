@@ -1,0 +1,21 @@
+{
+  "name": "mock-server",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Rodrigo Dias <rodrigogd@ciandt.com>"
+  ],
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "CodeMirror": "^5.21.0",
+    "bootstrap": "^3.3.7"
+  }
+}
