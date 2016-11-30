@@ -14,6 +14,13 @@ function Server(host, port){
 	
 	app.set('views', './views');
 	app.set('view engine', 'hbs');
+
+	app.get('/mock/:mock_id/delete', function(request, response){
+		var mockId = request.params.mock_id;
+		myCache.del(mockId, function( err, count ){
+			response.render('mock-deleted', {id: mockId});
+		});
+	});
 	
 	app.get('/mock/:mock_id', function(request, response){
 		var mockId = request.params.mock_id;
