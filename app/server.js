@@ -7,7 +7,7 @@ var http = require('http');
 var utils = require('./utils');
 
 
-function Server(){
+function Server(host, port){
 	var app = express();
 	
 	app.set('views', './views');
@@ -42,9 +42,9 @@ function Server(){
 			if ( cached == undefined ){
 				
 				var options = {
-					hostname: "dimas.cit",
+					hostname: host,
 					path: path,
-					port: 8085,
+					port: port,
 					method: method,
 					headers: headers
 				}
@@ -91,6 +91,7 @@ function Server(){
 	
 	this.start = function(){
 		//create node.js http server and listen on port
+		console.log("START SERVER TO "+ host+ ":" + port);
 		http.createServer(app).listen(3000);
 	};
 	
