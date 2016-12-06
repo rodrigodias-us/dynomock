@@ -6,7 +6,7 @@ var utils = require('./utils');
 
 var folderCache = 'mock_files';
 
-function Server(host, port, local_port){
+function Server(host, port, local_port=3000){
 
 	var app = express();
 	var bodyParser = require('body-parser');

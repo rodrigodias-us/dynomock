@@ -8,7 +8,6 @@ const optionDefinitions = [
   { name: 'local_port', alias: 'l', type: Number, defaultOption: true }
 ];
 const options = commandLineArgs(optionDefinitions);
-var local_port = (options.local_port==null)?3000:options.local_port;
 
 //verify args
 if(options.host==null||options.port==null){
@@ -18,6 +17,6 @@ if(options.host==null||options.port==null){
   "or"+
   "node index.js --h {HOST} --p {PORT}");
 }else{
-  var s = new Server(options.host, options.port,local_port);
+  var s = new Server(options.host, options.port,options.local_port);
   s.start();
 }
