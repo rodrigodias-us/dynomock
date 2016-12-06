@@ -1,7 +1,21 @@
 var Server = require('./app/server');
 
-var host = process.argv[2];
-var port = process.argv[3];
+//command args
+const commandLineArgs = require('command-line-args');
+const optionDefinitions = [
+  { name: 'host', alias: 'h', type: String },
+  { name: 'port', alias: 'p', type: Number }
+];
+const options = commandLineArgs(optionDefinitions);
 
-var s = new Server(host, port);
-s.start();
+//verify args
+if(options.host==null||options.port==null){
+  console.log("Host or Port args not found.\n"+
+  "How to use\n"+
+  "node index.js --host {HOST} --port {PORT}\n"+
+  "or"+
+  "node index.js --h {HOST} --p {PORT}");
+}else{
+  var s = new Server(options.host, options.port);
+  s.start();
+}
