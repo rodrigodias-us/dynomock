@@ -6,7 +6,8 @@ var utils = require('./utils');
 
 var folderCache = 'mock_files';
 
-function Server(host, port){
+function Server(host, port, local_port){
+
 	var app = express();
 	var bodyParser = require('body-parser');
 
@@ -135,8 +136,8 @@ function Server(host, port){
 	this.start = function(){
 		//create node.js http server and listen on port
 		console.log("START SERVER TO "+ host+ ":" + port);
-		console.log("LISTEN : 3000");
-		http.createServer(app).listen(3000);
+		console.log("LISTEN : "+ local_port);
+		http.createServer(app).listen(local_port);
 	};
 
 };
