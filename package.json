@@ -10,7 +10,8 @@
     "express": "^4.14.0",
     "hbs": "^4.0.1",
     "pug": "^2.0.0-beta6",
-    "serve-static": "^1.11.1"
+    "serve-static": "^1.11.1",
+    "command-line-args": "^3.0.4"
   },
   "devDependencies": {
   },
