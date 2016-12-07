@@ -5,44 +5,57 @@
 	<link rel="stylesheet" href="/static/lib/codemirror/lib/codemirror.css">
 	<link rel="stylesheet" href="/static/lib/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/static/app.css">
-	
+	<script src="/static/lib/jquery/dist/jquery.min.js"></script>
 </head>
 <body>
-
 	<form method="POST">
 		<div class="container">
-			<div class="row">
-				<div class="col-md-12">
-					<h5 style="text-align: center">Alterando o mock: {{id}}</h5>
+			<div class="modal-body row">
+				<div class="col-md-6">
+					<div class="alert alert-success" style="display:{{success_display}}">
+						<strong>Success!</strong> mock updated!</a>.
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<label class="list-group-item active">Alterando o mock: {{id}}</label><textarea id="editor" name="json" class="col-md-12" style="height:500px" alt="Json mock file">{{{body}}}</textarea>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12" style="text-align: center">
+							<button type="submit" class="btn btn-success" alt="Save Button">Save</button>
+							<a href="/mock/{{id}}/delete" class="btn btn-danger" alt="Delete Button">Delete</a>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="row">
+						<div class="col-md-12">
+							<ul class="list-group">
+								<li class="list-group-item active">Mock List</li>
+								{{#each mocks_data}}
+								<li class="list-group-item">
+									<div class="modal-body row">
+										<div class="col-md-9" alt="Id and Datetime Mock">
+											{{id_mock}}<br>{{date}}
+										</div>
+										<div class="col-md-3">
+											<a href="/mock/{{id_mock}}" class="btn btn-primary" alt="Edit Mock">Edit Mock</a>
+											<input type="button" class="btn btn-primary inf" id="{{id_mock}}" alt="Information Mock" value="Info">
+										</div>
+										<div class="col-md-12" id="inf_{{id_mock}}"></div>
+									</div></li>
+									{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-12">
-					<textarea id="editor" name="json" style="width: 100%; height:500px">{{{body}}}</textarea>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-12" style="text-align: center">
-					<button type="button" class="btn btn-primary">Download Dimas</button>
-					<button type="submit" class="btn btn-success">Salvar</button>
-					<a href="/mock/{{id}}/delete" class="btn btn-danger">Excluir Mock</a>
-				</div>
-			</div>
-		</div>
-	</form>
-	
-	<script src="/static/lib/jquery/dist/jquery.min.js"></script>
-	<script src="/static/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script src="/static/lib/codemirror/lib/codemirror.js"></script>
-	<script src="/static/lib/codemirror/addon/edit/matchbrackets.js"></script>
-	
-	<script>	
-	var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-		lineNumbers: true,
-		matchBrackets: true,
-		continueComments: "Enter",
-		extraKeys: {"Ctrl-Q": "toggleComment"}
-	});
-	</script>
-</body>
-</html>
+		</form>
+		<script src="/static/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="/static/lib/codemirror/lib/codemirror.js"></script>
+		<script src="/static/lib/codemirror/addon/edit/matchbrackets.js"></script>
+		<script src="/static/bo.js"></script>
+		<script src="/static/main.js"></script>
+	</body>
+	</html>
