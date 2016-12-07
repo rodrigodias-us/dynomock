@@ -11,27 +11,6 @@ function Server(host, port, local_port=3000){
 	var bodyParser = require('body-parser');
 	var success_display = "none";
 
-	var sync = require('synchronize');
-	var mocks_data = [];
-	var fiber = sync.fiber;
-	var await = sync.await;
-	var defer = sync.defer;
-
-	//List all mocks
-	var listAllMocks = function(){
-		sync(fs, 'readdir', 'stat');
-		sync.fiber(function(){
-			mocks_data = [];
-		  var i, paths, path, stat, data;
-		  paths = fs.readdir(folderCache);
-		  for(i = 0; i < paths.length; i++){
-		    file = folderCache+"/"+paths[i];
-		    stat = fs.stat(file);
-				mocks_data.push({id_mock:paths[i].replace(".json",""),date:stat.mtime});
-		  }
-		});
-	 };
-
 	app.use(bodyParser.urlencoded({extended: false}));
 
 	app.set('views', './views');
@@ -60,27 +39,27 @@ function Server(host, port, local_port=3000){
 	});
 
 	app.get('/mock/:mock_id', function(request, response){
- 		listAllMocks();
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
+ 		var mocksData = utils.listAllMocks(folderCache);
 
 		fs.readFile(pathMock, 'utf8', (err, data) => {
 			if (!err) {
 				var cached = JSON.parse(data);
 				success_display = "none";
 				if (cached){
-					response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached, null, 2), success_display: success_display, mocks_data:mocks_data});
+					response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached, null, 2), success_display: success_display, mocks_data: mocksData});
 				} else {
-					response.render('mock', { id: mockId, mock: cached, success_display: success_display, mocks_data:mocks_data });
+					response.render('mock', { id: mockId, mock: cached, success_display: success_display, mocks_data: mocksData });
 				}
 			}
 		});
 	});
 
 	app.post('/mock/:mock_id', function(request, response){
- 		listAllMocks();
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
+ 		var mocksData = utils.listAllMocks(folderCache);
 
 		var cache = JSON.parse(request.body.json);
 
@@ -89,7 +68,7 @@ function Server(host, port, local_port=3000){
 		        return console.log(err);
 		    }
 				success_display = "block";
-			response.render('mock', { id: mockId, mock: cache, body: JSON.stringify(cache, null, 2), success_display: success_display, mocks_data:mocks_data});
+			response.render('mock', { id: mockId, mock: cache, body: JSON.stringify(cache, null, 2), success_display: success_display, mocks_data: mocksData});
 			console.log( "SAVE CACHE FILE -> " + mockId );
 		});
 	});
@@ -168,7 +147,7 @@ function Server(host, port, local_port=3000){
 		});
 	});
 
-	this.start = function(){
+	this.start = function(){	
 		//create node.js http server and listen on port
 		console.log("START SERVER TO "+ host+ ":" + port);
 		console.log("LISTEN : "+ local_port);
