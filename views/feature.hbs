@@ -1,0 +1,54 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>DynoMock</title>
+	<link rel="stylesheet" href="/static/lib/codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="/static/lib/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/app.css">
+	<script src="/static/lib/jquery/dist/jquery.min.js"></script>
+</head>
+<body>
+
+	<div class="container">
+		<div class="page-header">
+			<h1>Feature - {{feature}}</h1>
+		</div>
+		<nav class="navbar navbar-inverse">
+			<div class="container-fluid">
+				<ul class="nav navbar-nav">
+					<li><a href="#">Home</a></li>
+					<li class="active"><a href="#">Features</a></li>
+					<li><a href="/mock/list">Mocks</a></li>
+				</ul>
+			</div>
+		</nav>
+
+
+		<div class="modal-body row">
+			<div class="row">
+				<div class="col-md-12">
+					<ul class="list-group">
+						<li class="list-group-item active">Feature List</li>
+						{{#each features}}
+						<li class="list-group-item">
+							<div class="modal-body row">
+								<div class="col-md-12" alt="Feature Name">
+									<a href="/feature/{{this}}">{{this}}</a>
+								</div>
+							</div>
+						</li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="/static/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="/static/lib/codemirror/lib/codemirror.js"></script>
+	<script src="/static/lib/codemirror/addon/edit/matchbrackets.js"></script>
+	<script src="/static/bo.js"></script>
+	<script src="/static/main.js"></script>
+</body>
+</html>

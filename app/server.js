@@ -3,9 +3,11 @@ var querystring = require('querystring');
 var express = require('express');
 var http = require('http');
 var utils = require('./utils');
-var folderCache = 'mock_files';
+var folderMockFiles = 'mock_files';
+var folderCache = '';
+var folderInfo = '';
 
-function Server(host, port, local_port=3000){
+function Server(host, port, feature, local_port=3000){
 
 	var app = express();
 	var bodyParser = require('body-parser');
@@ -15,6 +17,11 @@ function Server(host, port, local_port=3000){
 
 	app.set('views', './views');
 	app.set('view engine', 'hbs');
+
+	folderInfo = folderMockFiles+"/"+feature+"/info";
+	folderCache = folderMockFiles+"/"+feature+"/mock";
+	utils.createFolder(folderInfo);
+	utils.createFolder(folderCache);
 
 	app.get('/mock/:mock_id/delete', function(request, response){
 		var mockId = request.params.mock_id;
@@ -27,38 +34,49 @@ function Server(host, port, local_port=3000){
 		});
 	});
 
-
 	app.get('/mock/:mock_id', function(request, response){
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
- 		var mocksData = utils.listAllMocks(folderCache);
+		var mocksData = utils.listAllMocks(folderCache);
 
-		fs.readFile(pathMock, 'utf8', (err, data) => {
-			if (!err) {
-				var cached = JSON.parse(data);
-				success_display = "none";
-				if (cached){
-					response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached, null, 2), success_display: success_display, mocks_data: mocksData});
-				} else {
-					response.render('mock', { id: mockId, mock: cached, success_display: success_display, mocks_data: mocksData });
+		success_display = "none";
+		if(mocksData.length<1){
+			response.render('mock', { id: mockId, success_display: success_display,feature:feature });
+		}else{
+			fs.readFile(pathMock, 'utf8', (err, data) => {
+				if (!err) {
+					var cached = JSON.parse(data);
+					if (cached){
+						response.render('mock', { id: mockId, mock: cached, body: JSON.stringify(cached, null, 2), success_display: success_display, mocks_data: mocksData,feature:feature});
+					} else {
+						response.render('mock', { id: mockId, mock: cached, success_display: success_display, mocks_data: mocksData,feature:feature });
+					}
+				}else{
+					pathMock = folderCache + '/' + mocksData[0].id_mock + '.json';
+					fs.readFile(pathMock, 'utf8', (err, data) => {
+						if (!err) {
+							var cached = JSON.parse(data);
+							response.render('mock', { id: mocksData[0].id_mock, mock: cached, body: JSON.stringify(cached, null, 2), success_display: success_display, mocks_data: mocksData,feature:feature});
+						}
+					});
 				}
-			}
-		});
+			});
+		}
 	});
 
 	app.post('/mock/:mock_id', function(request, response){
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
- 		var mocksData = utils.listAllMocks(folderCache);
+		var mocksData = utils.listAllMocks(folderCache);
 
 		var cache = JSON.parse(request.body.json);
 
 		fs.writeFile(pathMock, JSON.stringify(cache, null, 2), function(err) {
-		    if(err) {
-		        return console.log(err);
-		    }
-				success_display = "block";
-			response.render('mock', { id: mockId, mock: cache, body: JSON.stringify(cache, null, 2), success_display: success_display, mocks_data: mocksData});
+			if(err) {
+				return console.log(err);
+			}
+			success_display = "block";
+			response.render('mock', { id: mockId, mock: cache, body: JSON.stringify(cache, null, 2), success_display: success_display, mocks_data: mocksData,feature:feature});
 			console.log( "SAVE CACHE FILE -> " + mockId );
 		});
 	});
@@ -79,10 +97,6 @@ function Server(host, port, local_port=3000){
 		}).on('end', function() {
 			var mockId = utils.makeMd5(body);
 			var pathMock = folderCache + '/' + mockId + '.json';
-
-			if (!fs.existsSync(folderCache)){
-			    fs.mkdirSync(folderCache);
-			}
 
 			fs.readFile(pathMock, 'utf8', (err, data) => {
 				if (!err) {
@@ -114,13 +128,12 @@ function Server(host, port, local_port=3000){
 							cache = {body: body, headers: res.headers};
 
 							fs.writeFile(pathMock, JSON.stringify(cache, null, 2), function(err) {
-							    if(err) {
-							        return console.log(err);
-							    }
+								if(err) {
+									return console.log(err);
+								}
 
 								console.log( "SAVE CACHE FILE -> " + mockId );
 							});
-
 							body.mockID = mockId;
 							response.set(res.headers)
 							.status(200)
@@ -140,7 +153,7 @@ function Server(host, port, local_port=3000){
 	//Mock Information
 	app.get('/mock/:mock_id/info', function(request, response){
 		var mockId = request.params.mock_id;
-		var mockFile = "info/inf_"+ mockId + '.json';
+		var mockFile = folderInfo+"/inf_"+ mockId + '.json';
 		fs.readFile(mockFile, 'utf8', (err, data) => {
 			if (!err) {
 				var mockInfo = JSON.parse(data);
@@ -152,16 +165,31 @@ function Server(host, port, local_port=3000){
 	//Save Mock Information
 	app.post('/mock/:mock_id/info-save', function(request, response){
 		var mockId = request.params.mock_id;
-		var mockFile = "info/inf_"+ mockId + '.json';
+		var mockFile = folderInfo+"/inf_"+ mockId + '.json';
 		var json = JSON.stringify(request.body);
 		fs.writeFile(mockFile, json, function(err) {
-		    if(err) {
-		        return console.log(err);
-		    }
-				response.render('mock-info-save',{});
-				console.log( "SAVE INFO FILE -> " + mockId );
+			if(err) {
+				return console.log(err);
+			}
+			response.render('mock-info-save',{});
+			console.log( "SAVE INFO FILE -> " + mockId );
 		});
 	});
+
+	//Feature
+	app.get('/feature', function(request, response){
+			var features = utils.listAllFeatures(folderMockFiles);
+			response.render('feature', { feature:feature,features:features});
+		});
+
+	//Change Feature
+	app.get('/feature/:feature_name', function(request, response){
+			feature = request.params.feature_name.replace("@"," ");
+			var features = utils.listAllFeatures(folderMockFiles);
+			folderInfo = folderMockFiles+"/"+feature+"/info";
+			folderCache = folderMockFiles+"/"+feature+"/mock";
+			response.render('feature', { feature:feature,features:features});
+		});
 
 	this.start = function(){
 		//create node.js http server and listen on port
@@ -169,7 +197,6 @@ function Server(host, port, local_port=3000){
 		console.log("LISTEN : "+ local_port);
 		http.createServer(app).listen(local_port);
 	};
-
 
 };
 
