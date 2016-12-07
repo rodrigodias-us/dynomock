@@ -1,5 +1,8 @@
 .CodeMirror {
 	border: 1px solid #dddddd;
-	margin: 10px 0px 30px 0px;
+	margin: 0px 0px 30px 0px;
 	height: 500px;
+}
+.container,.inf{
+	margin-top: 15px;
 }
