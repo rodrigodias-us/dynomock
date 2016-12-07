@@ -27,16 +27,6 @@ function Server(host, port, local_port=3000){
 		});
 	});
 
-	app.get('/mock/:mock_id/info', function(request, response){
-		var mockId = request.params.mock_id;
-		var mockFile = "info/inf_"+ mockId + '.json';
-		fs.readFile(mockFile, 'utf8', (err, data) => {
-			if (!err) {
-				var mockInfo = JSON.parse(data);
-			}
-			response.render('mock-info', {id: mockId,mockInfo:mockInfo});
-		});
-	});
 
 	app.get('/mock/:mock_id', function(request, response){
 		var mockId = request.params.mock_id;
@@ -147,7 +137,33 @@ function Server(host, port, local_port=3000){
 		});
 	});
 
-	this.start = function(){	
+	//Mock Information
+	app.get('/mock/:mock_id/info', function(request, response){
+		var mockId = request.params.mock_id;
+		var mockFile = "info/inf_"+ mockId + '.json';
+		fs.readFile(mockFile, 'utf8', (err, data) => {
+			if (!err) {
+				var mockInfo = JSON.parse(data);
+			}
+			response.render('mock-info', {id: mockId,mockInfo:mockInfo});
+		});
+	});
+
+	//Save Mock Information
+	app.post('/mock/:mock_id/info-save', function(request, response){
+		var mockId = request.params.mock_id;
+		var mockFile = "info/inf_"+ mockId + '.json';
+		var json = JSON.stringify(request.body);
+		fs.writeFile(mockFile, json, function(err) {
+		    if(err) {
+		        return console.log(err);
+		    }
+				response.render('mock-info-save',{});
+				console.log( "SAVE INFO FILE -> " + mockId );
+		});
+	});
+
+	this.start = function(){
 		//create node.js http server and listen on port
 		console.log("START SERVER TO "+ host+ ":" + port);
 		console.log("LISTEN : "+ local_port);
