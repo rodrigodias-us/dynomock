@@ -22,28 +22,78 @@
 				</ul>
 			</div>
 		</nav>
-
-
-		<div class="modal-body row">
-			<div class="row">
-				<div class="col-md-12">
-					<ul class="list-group">
-						<li class="list-group-item active">Feature List</li>
-						{{#each features}}
-						<li class="list-group-item">
-							<div class="modal-body row">
-								<div class="col-md-12" alt="Feature Name">
-									<a href="/feature/{{this}}">{{this}}</a>
-								</div>
+		<form method="POST" action="/feature/">
+			<div class="container">
+				<div class="modal-body row">
+					<div class="col-md-12">
+						<div class="alert alert-success" style="display:{{success_display}}">
+							<strong>Success!</strong> new feature saved!</a>
+						</div>
+							<div class="alert alert-success" style="display:{{deleted_display}}">
+								<strong>Success!</strong> feature deleted!</a>
 							</div>
-						</li>
-						{{/each}}
-					</ul>
+					</div>
+					<div class="col-md-6">
+						<ul class="list-group">
+							<li class="list-group-item active">Select the Feature</li>
+							{{#each features}}
+							<li class="list-group-item">
+								<div class="modal-body row">
+									<div class="col-md-8" alt="Feature Name">
+										<a href="/feature/{{this}}">{{this}}</a>
+									</div>
+									<div class="col-md-4" alt="Actions">
+										<a class="btn btn-success" href="/feature-zip/{{this}}">Export</a>
+										<a class="btn btn-danger save_info open_modal" id="{{this}}" name="/feature-delete/{{this}}">Delete</a>
+									</div>
+								</div>
+							</li>
+							{{/each}}
+						</ul>
+					</div>
+
+
+					<div class="col-md-6">
+						<label class="list-group-item active">Register new Feature</label>
+						<div class="form-group col-md-12 border1px">
+							<div class="form-group col-md-12 marginTop30px">
+								<label>Feature Name</label>
+								<input class="form-control" name="feature_name" value="{{featureInfo.feature_name}}" alt="New Feature Name" placeholder="New Feature Name">
+							</div>
+							<div class="form-group col-md-12">
+								<label>Description</label>
+								<textarea class="form-control" name="feature_description" alt="Feature Description" placeholder="Feature Description">{{featureInfo.feature_description}}</textarea>
+							</div>
+							<div class="form-group col-md-12">
+								<button type="submit" class="btn btn-success save_info" id="{{id}}">Save</button>
+							</div>
+						</div>
+					</div>
+
+
 				</div>
 			</div>
 		</div>
-	</div>
+	</form>
 
+	<!-- The Modal -->
+	<div class=" modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close close_modal">x</span>
+			<p>Are you sure you want to delete the feature <b class="message_modal"></b>?
+
+				<div class="form-group col-md-6">
+					<a class="btn btn-success col-md-12 modal_yes" href="">Yes</a>
+				</div>
+				<div class="form-group col-md-6">
+					<button type="button" class="btn btn-danger col-md-12 close_modal">No</button>
+				</div>
+			</p>
+
+		</div>
+	</div>
 
 	<script src="/static/lib/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script src="/static/lib/codemirror/lib/codemirror.js"></script>
