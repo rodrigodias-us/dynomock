@@ -243,22 +243,25 @@ function Server(host, port, feature, local_port=3000){
 		zip.folder(folder_mock);
 
 		//added files in folder info
-		var files = fs.readdirSync(folderMockFiles+"/"+folder_info);
-		for(i in files){
-			var file = folder_info+"/"+files[i];
-			zip.file(file,fs.readFileSync(folderMockFiles+"/"+file));
-		}
+		zip = zipFilesFromFeature(zip,folderMockFiles,folder_info);
 		//added files in folder mock
-		var files = fs.readdirSync(folderMockFiles+"/"+folder_mock);
-		for(i in files){
-			var file = folder_mock+"/"+files[i];
-			zip.file(file,fs.readFileSync(folderMockFiles+"/"+file));
-		}
+		zip = zipFilesFromFeature(zip,folderMockFiles,folder_mock);
 
+		//generate zip from feature
 		var data = zip.generate({base64:false,compression:'DEFLATE'});
 		fs.writeFileSync('public/'+export_feature+'.zip', data, 'binary');
 		response.redirect('../static/'+export_feature+'.zip');
 	});
+
+	//zip feature files
+	var zipFilesFromFeature = function(zip,folderMockFiles,folder){
+		var files = fs.readdirSync(folderMockFiles+"/"+folder);
+		for(i in files){
+			var file = folder+"/"+files[i];
+			zip.file(file,fs.readFileSync(folderMockFiles+"/"+file));
+		}
+		return zip;
+	};
 
 	this.start = function(){
 		//create node.js http server and listen on port

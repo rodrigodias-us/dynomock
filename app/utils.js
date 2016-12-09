@@ -32,9 +32,6 @@ module.exports = {
 			fs.rmdirSync(path);
 		}
 	},
-	withoutDotOnBegin:function(text){
-		return (text.charAt(0)!=".");
-	},
 	updateFolderMock: function(folderMockFiles,feature){
 		if(feature==null)return {};
 		feature = feature.replace(/ /g,"_").replace(/%20/g,"_");
@@ -57,7 +54,9 @@ module.exports = {
 		return mocks_data;
 	},
 	listAllFeatures: function(folder){
-		return fs.readdirSync(folder).filter(this.withoutDotOnBegin).map(function(path) {
+		return fs.readdirSync(folder).filter(function(text){
+			return (text.charAt(0)!=".");
+		}).map(function(path) {
   		return path.replace(/_/g," ");
 		});
 	}
