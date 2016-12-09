@@ -58,7 +58,7 @@ module.exports = {
 	},
 	listAllFeatures: function(folder){
 		return fs.readdirSync(folder).filter(this.withoutDotOnBegin).map(function(path) {
-  		return path.replace(/_/g," ");
+			return path.replace(/_/g," ");
 		});
 	}
 }
