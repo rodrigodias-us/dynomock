@@ -10,7 +10,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var success_display = "none";
 
-function Server(host, port, feature, local_port=3000){
+function Server(host, port, feature, address, local_port=3000){
 
 	app.use(bodyParser.urlencoded({extended: false}));
 
@@ -80,7 +80,7 @@ function Server(host, port, feature, local_port=3000){
 	app.use('/static', express.static('public'));
 	app.use('/static/lib', express.static('bower_components'));
 
-	app.use('/router-app/router/mobile', function(request, response) {
+	app.use(address, function(request, response) {
 		setFolderMock();
 		var headers = request.headers;
 		var method = request.method;
