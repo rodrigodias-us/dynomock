@@ -33,7 +33,7 @@ module.exports = {
 		}
 	},
 	updateFolderMock: function(folderMockFiles,feature){
-		if(feature==null)return {};
+		if(feature===null)return {};
 		feature = feature.replace(/ /g,"_").replace(/%20/g,"_");
 		folderInfo = folderMockFiles+"/"+feature+"/info",
 		folderCache = folderMockFiles+"/"+feature+"/mock"
@@ -43,19 +43,21 @@ module.exports = {
 	},
 	listAllMocks: function(folderCache){
 		var mocks_data = [];
-		if(folderCache==null)return [];
+		if(folderCache===null)return [];
 		var files = fs.readdirSync(folderCache);
 
 		for(i in files){
 			var file = folderCache+"/"+files[i];
-			var stat = fs.statSync(file);
-			mocks_data.push({id_mock:files[i].replace(/.json/g,""),date:stat.mtime});
+			if(files[i].charAt(0)!=="."){
+				var stat = fs.statSync(file);
+				mocks_data.push({id_mock:files[i].replace(/.json/g,""),date:stat.mtime});
+			}
 		}
 		return mocks_data;
 	},
 	listAllFeatures: function(folder){
 		return fs.readdirSync(folder).filter(function(text){
-			return (text.charAt(0)!=".");
+			return (text.charAt(0)!==".");
 		}).map(function(path) {
   		return path.replace(/_/g," ");
 		});

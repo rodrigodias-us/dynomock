@@ -34,8 +34,8 @@ function Server(host, port, feature, address, local_port=3000){
 		var mocksData = utils.listAllMocks(folderCache);
 
 		success_display = "none";
-		if(mocksData.length<1){
-			response.render('mock', { id: mockId, success_display: success_display,feature:getFeature() });
+		if(mockId==="list"){
+			response.render('mock', { id: mockId,mocks_data: mocksData, success_display: success_display,feature:getFeature() });
 		}else{
 			fs.readFile(pathMock, 'utf8', (err, data) => {
 				if (!err) {
@@ -276,7 +276,7 @@ function Server(host, port, feature, address, local_port=3000){
 
 	//set the folder mock
 	var getFeature = function(){
-		if(feature==null)return "";
+		if(feature===null)return "";
 		return feature.replace(/_/g," ");
 	};
 	//set the folder mock
