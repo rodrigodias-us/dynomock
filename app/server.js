@@ -113,8 +113,10 @@ function Server(host, port, feature, address, local_port=3000){
 						method: method,
 						headers: headers
 					}
+					var json = JSON.stringify(Object.assign(options, {body:JSON.parse(body)}));
+					fs.writeFile(pathMock.replace(".json","_request.json"), json, function(err) {});
 
-					var dimas = http.request(options, (res) => {
+					var server = http.request(options, (res) => {
 						var body = '';
 
 						res.on('data', (chunk) => {
@@ -141,7 +143,7 @@ function Server(host, port, feature, address, local_port=3000){
 					});
 
 					console.log("ACCESS Server!");
-					dimas.write(body);
+					server.write(body);
 				}
 			});
 		});
