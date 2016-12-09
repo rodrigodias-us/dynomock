@@ -27,7 +27,6 @@ function Server(host, port, feature, address, local_port=3000){
 			response.render('mock-deleted', {id: mockId});
 		});
 	});
-
 	app.get('/mock/:mock_id', function(request, response){
 		setFolderMock();
 		var mockId = request.params.mock_id;
@@ -269,8 +268,9 @@ function Server(host, port, feature, address, local_port=3000){
 
 	this.start = function(){
 		//create node.js http server and listen on port
-		console.log("START SERVER TO "+ host+ ":" + port);
-		console.log("LISTEN : "+ local_port);
+		var dynomock = fs.readFileSync('dynomock.txt', 'utf8');
+		console.log(dynomock);
+		console.log("START SERVER TO "+ host+ ":" + port + " - - - - - - LISTEN : "+ local_port + "\n");
 		http.createServer(app).listen(local_port);
 	};
 
