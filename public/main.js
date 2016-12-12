@@ -1,9 +1,10 @@
-function call_another_page(url,context,rules){
+function call_another_page(url,context,bussiness){
   $.ajax({
     url: url
   }).done(function(html) {
     context.innerHTML = html;
-    eval(rules)();
+    var bo = window[bussiness];
+    if (typeof bo === "function") bo();
   });
 }
 
