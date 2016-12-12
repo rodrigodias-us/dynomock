@@ -32,6 +32,24 @@ module.exports = {
 			fs.rmdirSync(path);
 		}
 	},
+	loadRule: function(mockFile,mockId,response) {
+		var hashMd5OrMockName = [];
+		hashMd5OrMockName.push(mockId);
+		//verify info file and put mock name
+		if( fs.existsSync(mockFile) ) {
+			var mockInfo = fs.readFileSync(mockFile);
+			var data = JSON.parse(mockInfo);
+			hashMd5OrMockName.push(data.mock_name);
+		}
+		for(name in hashMd5OrMockName){
+			var key = hashMd5OrMockName[name];
+			var file = 'rules/'+key+'.js';
+			if( fs.existsSync('app/'+file) ) {
+				var rule = require('./'+file.replace('.js',''));
+				rule.init(response);
+			}
+		}
+	},
 	updateFolderMock: function(folderMockFiles,feature){
 		if(feature===null)return {};
 		feature = feature.replace(/ /g,"_").replace(/%20/g,"_");
@@ -59,7 +77,7 @@ module.exports = {
 		return fs.readdirSync(folder).filter(function(text){
 			return (text.charAt(0)!==".");
 		}).map(function(path) {
-  		return path.replace(/_/g," ");
+			return path.replace(/_/g," ");
 		});
 	}
 }

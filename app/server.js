@@ -95,10 +95,16 @@ function Server(host, port, feature, address, local_port=3000){
 			var pathMock = folderCache + '/' + mockId + '.json';
 
 			fs.readFile(pathMock, 'utf8', (err, data) => {
+
+				var mockFile = folderInfo+"/inf_"+ mockId + '.json';
+
 				if (!err) {
 					console.log( "SEND CACHE FILE -> " + mockId );
 					var cached = JSON.parse(data);
 					cached.body.mockID = mockId;
+
+					//loading rules
+					utils.loadRule(mockFile,mockId,cached);
 
 					response
 					.set(cached.headers)
@@ -117,19 +123,19 @@ function Server(host, port, feature, address, local_port=3000){
 
 					var server = http.request(options, (res) => {
 						var body = '';
-
 						res.on('data', (chunk) => {
 							body += chunk;
 						}).on('end', () => {
 							body = JSON.parse(body);
-
 							cache = {body: body, headers: res.headers};
+
+							//loading rules
+							utils.loadRule(mockFile,mockId,cache);
 
 							fs.writeFile(pathMock, JSON.stringify(cache, null, 2), function(err) {
 								if(err) {
 									return console.log(err);
 								}
-
 								console.log( "SAVE CACHE FILE -> " + mockId );
 							});
 							body.mockID = mockId;

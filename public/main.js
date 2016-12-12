@@ -44,16 +44,16 @@ if(document.getElementById("editor")){
     extraKeys: {"Ctrl-Q": "toggleComment"}
   });
 
-    //on load check if the textarea is empty and disable validation
+  //on load check if the textarea is empty and disable validation
+  editor.setOption("lint", editor.getValue().trim() );
+
+  //once changes happen, if the textarea gets filled up again re-enable the validation
+  editor.on("change", function(cm, change) {
     editor.setOption("lint", editor.getValue().trim() );
+  });
 
-    //once changes happen, if the textarea gets filled up again re-enable the validation
-    editor.on("change", function(cm, change) {
-        editor.setOption("lint", editor.getValue().trim() );
-    });
-
-    ///sometimes you need to refresh the CodeMirror instance to fix alignment problems or some other glitch
-    setTimeout(function(){
-       editor.refresh();
-    },0);
+  ///sometimes you need to refresh the CodeMirror instance to fix alignment problems or some other glitch
+  setTimeout(function(){
+    editor.refresh();
+  },0);
 }
