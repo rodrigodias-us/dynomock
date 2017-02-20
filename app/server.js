@@ -10,7 +10,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var success_display = "none";
 
-function Server(host, port, feature, local_port=3000){
+function Server(host, port, feature, address, local_port=3000){
 
 	app.use(bodyParser.urlencoded({extended: false}));
 
@@ -27,15 +27,15 @@ function Server(host, port, feature, local_port=3000){
 			response.render('mock-deleted', {id: mockId});
 		});
 	});
-
 	app.get('/mock/:mock_id', function(request, response){
+		setFolderMock();
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
 		var mocksData = utils.listAllMocks(folderCache);
 
 		success_display = "none";
-		if(mocksData.length<1){
-			response.render('mock', { id: mockId, success_display: success_display,feature:getFeature() });
+		if(mockId==="list"){
+			response.render('mock', { id: mockId,mocks_data: mocksData, success_display: success_display,feature:getFeature() });
 		}else{
 			fs.readFile(pathMock, 'utf8', (err, data) => {
 				if (!err) {
@@ -59,6 +59,7 @@ function Server(host, port, feature, local_port=3000){
 	});
 
 	app.post('/mock/:mock_id', function(request, response){
+		setFolderMock();
 		var mockId = request.params.mock_id;
 		var pathMock = folderCache + '/' + mockId + '.json';
 		var mocksData = utils.listAllMocks(folderCache);
@@ -78,7 +79,8 @@ function Server(host, port, feature, local_port=3000){
 	app.use('/static', express.static('public'));
 	app.use('/static/lib', express.static('bower_components'));
 
-	app.use('/router-app/router/mobile', function(request, response) {
+	app.use(address, function(request, response) {
+		setFolderMock();
 		var headers = request.headers;
 		var method = request.method;
 		var path = request.originalUrl;
@@ -93,10 +95,16 @@ function Server(host, port, feature, local_port=3000){
 			var pathMock = folderCache + '/' + mockId + '.json';
 
 			fs.readFile(pathMock, 'utf8', (err, data) => {
+
+				var mockFile = folderInfo+"/inf_"+ mockId + '.json';
+
 				if (!err) {
 					console.log( "SEND CACHE FILE -> " + mockId );
 					var cached = JSON.parse(data);
 					cached.body.mockID = mockId;
+
+					//loading rules
+					utils.loadRule(mockFile,mockId,cached);
 
 					response
 					.set(cached.headers)
@@ -110,22 +118,24 @@ function Server(host, port, feature, local_port=3000){
 						method: method,
 						headers: headers
 					}
+					var json = JSON.stringify(Object.assign(options, {body:JSON.parse(body)}));
+					fs.writeFile(pathMock.replace(".json","_request.json"), json, function(err) {});
 
-					var dimas = http.request(options, (res) => {
+					var server = http.request(options, (res) => {
 						var body = '';
-
 						res.on('data', (chunk) => {
 							body += chunk;
 						}).on('end', () => {
 							body = JSON.parse(body);
-
 							cache = {body: body, headers: res.headers};
+
+							//loading rules
+							utils.loadRule(mockFile,mockId,cache);
 
 							fs.writeFile(pathMock, JSON.stringify(cache, null, 2), function(err) {
 								if(err) {
 									return console.log(err);
 								}
-
 								console.log( "SAVE CACHE FILE -> " + mockId );
 							});
 							body.mockID = mockId;
@@ -138,7 +148,7 @@ function Server(host, port, feature, local_port=3000){
 					});
 
 					console.log("ACCESS Server!");
-					dimas.write(body);
+					server.write(body);
 				}
 			});
 		});
@@ -146,6 +156,7 @@ function Server(host, port, feature, local_port=3000){
 
 	//Mock Information
 	app.get('/mock/:mock_id/info', function(request, response){
+		setFolderMock();
 		var mockId = request.params.mock_id;
 		var mockFile = folderInfo+"/inf_"+ mockId + '.json';
 		fs.readFile(mockFile, 'utf8', (err, data) => {
@@ -158,6 +169,7 @@ function Server(host, port, feature, local_port=3000){
 
 	//Save Mock Information
 	app.post('/mock/:mock_id/info-save', function(request, response){
+		setFolderMock();
 		var mockId = request.params.mock_id;
 		var mockFile = folderInfo+"/inf_"+ mockId + '.json';
 		var json = JSON.stringify(request.body);
@@ -213,16 +225,9 @@ function Server(host, port, feature, local_port=3000){
 
 	//Delete Feature
 	app.get('/feature-delete/:feature_name', function(request, response){
-		feature = request.params.feature_name;
 
-		console.log(folderMockFiles+"/"+feature);
-		utils.deleteFolderRecursive(folderMockFiles+"/"+feature);
-
+		utils.deleteFolderRecursive(folderMockFiles+"/"+request.params.feature_name);
 		var features = utils.listAllFeatures(folderMockFiles);
-		feature = features[0];
-
-		//set the folder mock
-		setFolderMock();
 		success_display = "none";
 		deleted_display = "block";
 		response.render('feature', { feature:getFeature(),features:features,success_display:success_display,deleted_display:deleted_display});
@@ -243,22 +248,29 @@ function Server(host, port, feature, local_port=3000){
 		zip.folder(folder_mock);
 
 		//added files in folder info
-		var files = fs.readdirSync(folderMockFiles+"/"+folder_info);
-		for(i in files){
-			var file = folder_info+"/"+files[i];
-			zip.file(file,fs.readFileSync(folderMockFiles+"/"+file));
-		}
+		zip = zipFilesFromFeature(zip,folderMockFiles,folder_info);
 		//added files in folder mock
-		var files = fs.readdirSync(folderMockFiles+"/"+folder_mock);
+		zip = zipFilesFromFeature(zip,folderMockFiles,folder_mock);
+
+		//generate zip from feature
+		var data = zip.generate({base64:false,compression:'DEFLATE'});
+
+		//open content-type zip
+		response.set('Content-Type', 'application/zip')
+		response.set('Content-Disposition', 'attachment; filename='+export_feature+'.zip');
+		response.set('Content-Length', data.length);
+		response.end(data, 'binary');
+	});
+
+	//zip feature files
+	var zipFilesFromFeature = function(zip,folderMockFiles,folder){
+		var files = fs.readdirSync(folderMockFiles+"/"+folder);
 		for(i in files){
-			var file = folder_mock+"/"+files[i];
+			var file = folder+"/"+files[i];
 			zip.file(file,fs.readFileSync(folderMockFiles+"/"+file));
 		}
-
-		var data = zip.generate({base64:false,compression:'DEFLATE'});
-		fs.writeFileSync('public/'+export_feature+'.zip', data, 'binary');
-		response.redirect('../static/'+export_feature+'.zip');
-	});
+		return zip;
+	};
 
 	this.start = function(){
 		//create node.js http server and listen on port
@@ -270,7 +282,7 @@ function Server(host, port, feature, local_port=3000){
 
 	//set the folder mock
 	var getFeature = function(){
-		if(feature==null)return "";
+		if(feature===null)return "";
 		return feature.replace(/_/g," ");
 	};
 	//set the folder mock
